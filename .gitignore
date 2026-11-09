@@ -1,0 +1,19 @@
+# ── 编辑器 / 系统 ──────────────────────────────────────
+# .vscode 里保存的是本机绝对路径（Python 解释器、TypeScript SDK），
+# 提交后会把别人的编辑器配置覆盖掉，所以不入库。
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── 临时文件 ────────────────────────────────────────────
+*.tmp
+*.bak
+*.log
+*.swp
+
+# ── 说明 ────────────────────────────────────────────────
+# 各子项目还有自己的 .gitignore：
+#   code/agent-lab/.gitignore       → .venv / .env / data/*.db
+#   code/agent-lab-web/.gitignore   → node_modules / dist

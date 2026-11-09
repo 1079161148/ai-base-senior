@@ -1,0 +1,46 @@
+[project]
+name = "agent-lab"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "lhl", email = "1079161148@qq.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "aiosqlite>=0.22.1",
+    "fastapi>=0.162.2",
+    "httpx>=0.28.1",
+    "pydantic-settings>=2.16.2",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[project.scripts]
+agent-lab = "agent_lab:main"
+
+[build-system]
+requires = ["uv_build>=0.12.2,<0.13.0"]
+build-backend = "uv_build"
+
+# --- 类型检查器配置 ---
+# 本项目是 src layout：真正的源码根是 src/，包名是 agent_lab。
+# 不声明这一点，pyright/basedpyright 会把 "agent_lab.app.xxx" 误判为
+# 隐式相对导入（reportImplicitRelativeImport），并建议加 "." 前缀 —— 
+# 那个建议是错的，照改会变成真正的相对导入，运行时抛 ImportError。
+[tool.pyright]
+include = ["src"]
+extraPaths = ["src"]
+pythonVersion = "3.12"
+# 关键：告诉检查器去项目自己的 .venv 里找第三方包。
+# 不配这两行，pyright/basedpyright 会用「系统 Python」解析，
+# 找不到 aiosqlite / fastapi 等依赖 → reportMissingImports，
+# 并且因为导入类型是 Unknown，会连锁报出几十条 reportUnknownMemberType。
+venvPath = "."
+venv = ".venv"
+
+[tool.basedpyright]
+include = ["src"]
+extraPaths = ["src"]
+pythonVersion = "3.12"
+venvPath = "."
+venv = ".venv"

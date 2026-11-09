@@ -1,0 +1,25 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    // 本文件是 solution-style：`files: []` + references，本身不参与编译，
+    // `vue-tsc -b` 只会顺着 references 去构建各自的项目。
+    //
+    // 但部分编辑器的 TS 语言服务对「单个文件」做诊断时，只读最近的 tsconfig.json，
+    // 不会跟进 references 指向的 project，于是回落到默认 lib（ES5），
+    // 把 String.prototype.startsWith（ES2015+）判为「不存在」。
+    //
+    // 这里补齐 target/lib，让语言服务无论走哪条路径都能拿到正确的标准库。
+    // 真正生效的编译配置仍是 tsconfig.app.json / tsconfig.node.json，两者不受影响。
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  }
+}
