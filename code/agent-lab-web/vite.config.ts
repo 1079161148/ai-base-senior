@@ -13,9 +13,11 @@ export default defineConfig({
   },
   server: {
     // 固定 IPv4。Vite 默认 host 是 'localhost'，在 Windows 上可能只绑定 [::1]，
-    // 导致 http://127.0.0.1:5173 连不上（浏览器用 localhost 访问则正常，但代理/脚本会挂）
+    // 导致 http://127.0.0.1:9999 连不上（浏览器用 localhost 访问则正常，但代理/脚本会挂）
     host: '127.0.0.1',
-    port: 5173,
+    port: 9999,
+    // 端口被占用时直接报错，而不是悄悄切到 9998 —— 否则代理脚本会连错端口
+    strictPort: true,
     proxy: {
       // 开发期把 /api 转发给 FastAPI。
       // 好处：业务代码里只写 /api/v1/xxx，

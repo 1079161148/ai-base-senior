@@ -1,0 +1,22 @@
+[
+  {"qid":1,"question":"固定长度分块和语义分块各有什么优缺点？","expected_sections":["3.2 六种策略"],"expected_keywords":["固定长度","语义分块","策略"]},
+  {"qid":2,"question":"递归分块为什么是推荐默认选择？","expected_sections":["3.3 递归分块"],"expected_keywords":["递归","不用模型","不用 token","零成本"]},
+  {"qid":3,"question":"上下文增强是怎么做的？给出例子。","expected_sections":["3.4 上下文分块"],"expected_keywords":["上下文化","Anthropic","ACME"]},
+  {"qid":4,"question":"chunk 重叠和 chunk expansion 哪个更好？","expected_sections":["3.6 overlap"],"expected_keywords":["overlap","expansion","Pinecone","重叠"]},
+  {"qid":5,"question":"嵌入模型选型要考虑哪五个维度？","expected_sections":["4.1 五个评估维度"],"expected_keywords":["领域匹配","语言","维度与成本","最大输入长度","稀疏"]},
+  {"qid":6,"question":"为什么建库和查询必须用同一个嵌入模型？","expected_sections":["4.2 三条硬规则"],"expected_keywords":["同一个模型","混用","重建索引"]},
+  {"qid":7,"question":"向量维度越高越好吗？低维和高维各有什么优劣？","expected_sections":["4.3 一个常被忽视的点"],"expected_keywords":["维度不是越高越好","384","3072","3-8 倍"]},
+  {"qid":8,"question":"pgvector 和 Chroma 各适合什么场景？","expected_sections":["5.1 主流选项对比"],"expected_keywords":["pgvector","向量库","主流选项","Chroma","Qdrant"]},
+  {"qid":9,"question":"什么时候应该用 Prompt Caching 而不是 RAG？","expected_sections":["先做减法"],"expected_keywords":["小于 200k","prompt caching","把全库塞进 prompt"]},
+  {"qid":10,"question":"RAG 的四层检索架构是什么？","expected_sections":["7.1 四层检索架构"],"expected_keywords":["四层检索","粗筛","BM25","融合","RRF","重排","Cross-encoder"]},
+  {"qid":11,"question":"Anthropic 实验中加了哪些改进后失败率降得最多？","expected_sections":["Anthropic 的一组硬数据"],"expected_keywords":["5.7%","1.9%","上下文嵌入","上下文 BM25","重排序"]},
+  {"qid":12,"question":"评测 RAG 有哪四类指标？","expected_sections":["8.1 四类指标"],"expected_keywords":["Context Recall","Context Precision","Faithfulness","Answer Relevancy"]},
+  {"qid":13,"question":"为什么 recall@k 是最实用的 RAG 评测指标？","expected_sections":["8.2 最实用的一个指标"],"expected_keywords":["只测检索不测生成","recall@k","分离"]},
+  {"qid":14,"question":"如何建立一个最小可行的 RAG 评测流程？","expected_sections":["8.3 最小可行评测"],"expected_keywords":["30 条真实查询","标注","哪些 chunk 是正确答案","跑检索"]},
+  {"qid":15,"question":"分块时，如果一块脱离上下文后人看不懂，说明什么问题？","expected_sections":["3.7 一条极简的判断标准"],"expected_keywords":["脱离上下文","人还能看懂","自检"]},
+  {"qid":16,"question":"向量检索和关键词检索各有什么优势，为什么要做混合检索？","expected_sections":[],"expected_keywords":["混合检索","专属名词","BM25","向量检索"]},
+  {"qid":17,"question":"元数据过滤在多租户系统里为什么重要？","expected_sections":["5.3 最容易被低估的功能"],"expected_keywords":["元数据过滤","租户","权限","acl","tenant_id"]},
+  {"qid":18,"question":"索引更新有哪些策略？全量重建和增量 upsert 各适合什么情况？","expected_sections":["6.1 三种更新策略"],"expected_keywords":["全量重建","增量 upsert","双写","级联删除"]},
+  {"qid":19,"question":"Anthropic 测试 top-k 取多少效果最好？","expected_sections":["7.2 top-k 怎么定"],"expected_keywords":["5 / 10 / 20","top-20 表现最佳","5、10、20","命中率最佳"]},
+  {"qid":20,"question":"Pinecone 说「如果一段文本脱离上下文后，人还能看懂，那语言模型也能看懂」这句话在讲什么？","expected_sections":["3.7 一条极简的判断标准"],"expected_keywords":["人能看懂","脱离上下文","3.7"]}
+]

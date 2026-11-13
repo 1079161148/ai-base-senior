@@ -31,6 +31,52 @@ uv sync
 > `uv sync` 会按 `pyproject.toml` 创建 `.venv` 并装好全部依赖。
 > 如果还没装 uv：`powershell -c "irm https://astral.sh/uv/install.ps1 | iex"`
 
+### 配置模型（S1 起需要）
+
+```powershell
+cd E:\ai-agent-study\code\agent-lab
+copy .env.example .env
+```
+
+然后编辑 `.env`，**只需要填一行**：
+
+```bash
+LLM_API_KEY=sk-你的key
+```
+
+默认接 DeepSeek（`LLM_BASE_URL` / `LLM_MODEL` 已预设好）。换厂商改这两项即可，
+`.env.example` 里列了 OpenAI / 通义千问 / Kimi / 智谱 / 本地 Ollama 的现成配置。
+
+统一走 **OpenAI 兼容协议**，所以不用改一行代码就能切换。
+
+> **不填也能启动**：`/api/v1/chat/stream` 返回 `503 LLM_NOT_CONFIGURED`，
+> 待办和 demo 流照常可用。这是刻意设计的 —— 缺一个外部依赖不该让整个项目跑不起来。
+>
+> `.env` 只在进程启动时读一次，**改完必须重启后端**。
+
+#### 改完先自检，不用启动服务
+
+```powershell
+cd E:\ai-agent-study\code\agent-lab
+uv run python scripts/check_llm.py
+```
+
+它会打印当前配置、实际请求的地址、上游的**原始报错**，并给出对应的修改建议。
+比在页面上对着一条红色错误条猜要快得多。
+
+成功时是这样：
+
+```
+HTTP 200
+  ✓ 模型回复：'收到'
+  ✓ token 用量：{'prompt_tokens': 10, 'completion_tokens': 2, 'total_tokens': 12}
+
+[√] 配置可用，重启后端即可在页面上对话。
+```
+
+> **Key 和地址必须是同一家平台。** 中转站的 Key 配 `api.deepseek.com`
+> 一定返回 401 —— 这是最常见的配置错误。
+
 ### 前端
 
 ```powershell

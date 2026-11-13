@@ -6,6 +6,10 @@
 **本层不 import FastAPI** —— 它只知道"有一个 aiosqlite 连接"。
 所以同一套函数可以直接被脚本、定时任务、或将来 Agent 的 Tool 复用，
 不需要经过 HTTP。
+
+**S9 多租户**：每个函数都带 `user_id`，且**必须**出现在 WHERE 里。
+只在 INSERT 时写 user_id 而不在查询里过滤，是最常见的越权写法 ——
+数据确实分开了，但 A 用户依然能读到 B 用户的行。
 """
 
 from typing import cast
@@ -38,33 +42,43 @@ def _to_out(row: aiosqlite.Row) -> TodoOut:
     )
 
 
-async def list_todos(db: aiosqlite.Connection) -> list[TodoOut]:
-    cursor = await db.execute(f"SELECT {_COLUMNS} FROM todos ORDER BY id DESC")
+async def list_todos(db: aiosqlite.Connection, *, user_id: str = "") -> list[TodoOut]:
+    cursor = await db.execute(
+        f"SELECT {_COLUMNS} FROM todos WHERE user_id = ? ORDER BY id DESC",
+        (user_id,),
+    )
     rows = await cursor.fetchall()
     await cursor.close()
     return [_to_out(row) for row in rows]
 
 
-async def get_todo(db: aiosqlite.Connection, todo_id: int) -> TodoOut:
+async def get_todo(db: aiosqlite.Connection, todo_id: int, *, user_id: str = "") -> TodoOut:
     cursor = await db.execute(
-        f"SELECT {_COLUMNS} FROM todos WHERE id = ?",
-        (todo_id,),
+        f"SELECT {_COLUMNS} FROM todos WHERE id = ? AND user_id = ?",
+        (todo_id, user_id),
     )
     row = await cursor.fetchone()
     await cursor.close()
     if row is None:
+        # 别人的待办与不存在返回同样的 404：
+        # 返回 403 等于告诉对方"这个 id 存在，只是不属于你"。
         raise ApiError(404, "TODO_NOT_FOUND", f"待办 {todo_id} 不存在")
     return _to_out(row)
 
 
-async def create_todo(db: aiosqlite.Connection, payload: TodoCreate) -> TodoOut:
+async def create_todo(
+    db: aiosqlite.Connection,
+    payload: TodoCreate,
+    *,
+    user_id: str = "",
+) -> TodoOut:
     # 取时间、转存储格式都走 core/time.py：
     # 库里恒为 UTC ISO 字符串，输出格式由那一个模块统一决定。
     # 这里不允许出现 isoformat / strftime —— 否则格式又会散落回业务层。
     created_at = to_storage(now())
     cursor = await db.execute(
-        "INSERT INTO todos (title, done, created_at) VALUES (?, 0, ?)",
-        (payload.title, created_at),
+        "INSERT INTO todos (user_id, title, done, created_at) VALUES (?, ?, 0, ?)",
+        (user_id, payload.title, created_at),
     )
     await db.commit()
     new_id = cursor.lastrowid
@@ -72,16 +86,19 @@ async def create_todo(db: aiosqlite.Connection, payload: TodoCreate) -> TodoOut:
 
     if new_id is None:  # 理论上不会发生，但类型上 lastrowid 是 int | None
         raise ApiError(500, "TODO_CREATE_FAILED", "创建待办失败")
-    return await get_todo(db, new_id)
+    return await get_todo(db, new_id, user_id=user_id)
 
 
 async def update_todo(
     db: aiosqlite.Connection,
     todo_id: int,
     payload: TodoUpdate,
+    *,
+    user_id: str = "",
 ) -> TodoOut:
-    # 先查一次：不存在直接 404，避免 UPDATE 静默影响 0 行后返回一个假结果
-    current = await get_todo(db, todo_id)
+    # 先查一次：不存在（或不属于当前用户）直接 404，
+    # 避免 UPDATE 静默影响 0 行后返回一个假结果
+    current = await get_todo(db, todo_id, user_id=user_id)
 
     title = current.title if payload.title is None else payload.title
     done = current.done if payload.done is None else payload.done
@@ -91,16 +108,19 @@ async def update_todo(
     # 「有些函数关、有些没关」的不一致，以后排查连接/句柄问题时很难看出规律。
     # 顺带消除 reportUnusedCallResult —— 之前 execute 的返回值被直接丢弃了。
     cursor = await db.execute(
-        "UPDATE todos SET title = ?, done = ? WHERE id = ?",
-        (title, int(done), todo_id),
+        "UPDATE todos SET title = ?, done = ? WHERE id = ? AND user_id = ?",
+        (title, int(done), todo_id, user_id),
     )
     await db.commit()
     await cursor.close()
-    return await get_todo(db, todo_id)
+    return await get_todo(db, todo_id, user_id=user_id)
 
 
-async def delete_todo(db: aiosqlite.Connection, todo_id: int) -> None:
-    cursor = await db.execute("DELETE FROM todos WHERE id = ?", (todo_id,))
+async def delete_todo(db: aiosqlite.Connection, todo_id: int, *, user_id: str = "") -> None:
+    cursor = await db.execute(
+        "DELETE FROM todos WHERE id = ? AND user_id = ?",
+        (todo_id, user_id),
+    )
     await db.commit()
     deleted = cursor.rowcount
     await cursor.close()

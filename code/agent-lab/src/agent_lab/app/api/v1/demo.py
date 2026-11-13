@@ -14,32 +14,38 @@
 """
 
 import asyncio
-import json
 from collections.abc import AsyncGenerator
+from typing import Annotated
 
 from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
+
+from ...core.sse import encode as sse
 
 router = APIRouter(prefix="/demo", tags=["demo"])
 
 DEFAULT_TEXT = "你好，我是流式输出的演示内容。注意看文字是一个一个出现的。"
 
 
-def sse(payload: dict) -> str:
-    """把 dict 编码成一条 SSE 消息。
-
-    ensure_ascii=False：否则中文会变成 \\u4f60\\u597d，虽然浏览器能解，但调试时看不懂。
-    """
-    return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
-
-
 @router.get("/stream", summary="SSE 流式演示（假数据）")
 async def stream(
-    text: str = Query(
-        default=DEFAULT_TEXT,
-        max_length=200,  # 边界：不设上限的话，一个超长文本能把连接占用很久
-        description="要逐字推送的文本",
-    ),
+    # 用 Annotated 而不是 `text: str = Query(default=...)`：
+    #
+    # Python 的默认参数「在函数定义时求值一次」，所以 `= Query(...)` 属于
+    # 「默认值位置调用函数」—— 检查器 reportCallInDefaultInitializer 会拦这种模式。
+    # 这次能跑通是因为 FastAPI 只把它当元数据读取，但模式本身容易埋雷
+    # （同一份元数据被所有调用共享）。
+    #
+    # Annotated 把元数据放进「类型标注」，默认值仍由签名提供，语义如实反映：
+    #   类型是 str，约束是 max_length=200，默认值是 DEFAULT_TEXT。
+    # 这也是 FastAPI 当前官方推荐的写法。
+    text: Annotated[
+        str,
+        Query(
+            max_length=200,  # 边界：不设上限的话，一个超长文本能把连接占用很久
+            description="要逐字推送的文本",
+        ),
+    ] = DEFAULT_TEXT,
 ) -> StreamingResponse:
     async def event_generator() -> AsyncGenerator[str, None]:
         for index, char in enumerate(text):

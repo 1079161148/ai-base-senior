@@ -1,0 +1,24 @@
+{
+  "total": 6,
+  "passed": 6,
+  "pass_rate": 1.0,
+  "by_category": {
+    "standard": {
+      "count": 6,
+      "passed": 6,
+      "pass_rate": 1.0,
+      "avg_score": 1.0
+    }
+  },
+  "p50_ms": 5649.8,
+  "p95_ms": 24112.8,
+  "avg_cost_cny": 0.007899,
+  "total_cost_cny": 0.047394,
+  "failure_types": {},
+  "failures": [],
+  "needs_human": [],
+  "gates": {
+    "passed": true,
+    "problems": []
+  }
+}

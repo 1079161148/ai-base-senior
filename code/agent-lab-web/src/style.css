@@ -1,416 +1,104 @@
-:root {
-  --bg: #0b0d12;
-  --bg-elevated: #141821;
-  --bg-input: #0f131b;
-  --border: #232936;
-  --border-strong: #2f3748;
-  --text: #e6e9f0;
-  --text-dim: #8b94a7;
-  --text-faint: #5a6376;
-  --accent: #6d8cff;
-  --accent-soft: rgba(109, 140, 255, 0.14);
-  --success: #34d399;
-  --danger: #f87171;
-  --radius: 12px;
-  --mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+/* Naive UI 接管一切，这里只保留 markdown 代码高亮样式 */
 
-  color-scheme: dark;
+/* highlight.js github-dark 主题（适配暗色背景） */
+.hljs {
+  color: #c9d1d9;
+  background: #161b22;
+}
+.hljs-doctag, .hljs-keyword, .hljs-meta .hljs-keyword,
+.hljs-template-tag, .hljs-template-variable, .hljs-type, .hljs-variable.language_ {
+  color: #ff7b72;
+}
+.hljs-title, .hljs-title.class_, .hljs-title.class_.inherited__,
+.hljs-title.function_ { color: #d2a8ff; }
+.hljs-attr, .hljs-attribute, .hljs-literal, .hljs-meta,
+.hljs-number, .hljs-operator, .hljs-selector-attr,
+.hljs-selector-class, .hljs-selector-id, .hljs-variable {
+  color: #79c0ff;
+}
+.hljs-meta .hljs-string, .hljs-regexp, .hljs-string {
+  color: #a5d6ff;
+}
+.hljs-built_in, .hljs-symbol { color: #ffa657; }
+.hljs-code, .hljs-comment, .hljs-formula { color: #8b949e; }
+.hljs-name, .hljs-quote, .hljs-selector-pseudo,
+.hljs-selector-tag { color: #7ee787; }
+.hljs-subst { color: #c9d1d9; }
+.hljs-section { color: #1f6feb; font-weight: bold; }
+.hljs-bullet { color: #f2cc60; }
+.hljs-emphasis { color: #c9d1d9; font-style: italic; }
+.hljs-strong { color: #c9d1d9; font-weight: bold; }
+.hljs-addition { color: #aff5b4; background-color: #033a16; }
+.hljs-deletion { color: #ffdcd7; background-color: #67060c; }
+
+/* Markdown 正文样式。
+   注意：这里是普通全局 CSS 文件，不能写 :deep()。
+   :deep() 只对 SFC 的 <style scoped> 生效，写在这里会被浏览器当成非法
+   选择器整条丢弃 —— 表格、代码块、引用块的样式就全没了。 */
+.md-body pre {
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: #161b22;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.md-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+.md-body p code {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
 }
 
-* {
-  box-sizing: border-box;
+/* 表格：markdown-it 默认开启 GFM 表格，但外层容器要有横向滚动，
+   否则长表格会把气泡撑破 */
+.md-body table {
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 13px;
+  /* display:block 让宽表可以在气泡内部横向滚动，而不是把气泡撑破。
+     宽度给 100%，短表也能铺满，视觉上更整齐。 */
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+}
+.md-body th,
+.md-body td {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+.md-body th {
+  background: rgba(255, 255, 255, 0.05);
+  font-weight: 600;
+}
+.md-body tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
 }
 
+.md-body blockquote {
+  border-left: 3px solid rgba(45, 212, 191, 0.3);
+  padding: 4px 12px;
+  margin: 8px 0;
+  color: rgba(255, 255, 255, 0.6);
+}
+.md-body a {
+  color: #2dd4bf;
+}
+.md-body ul,
+.md-body ol {
+  padding-left: 22px;
+}
+
+/* 全局微调 */
 body {
   margin: 0;
-  min-height: 100vh;
-  background:
-    radial-gradient(1100px 520px at 12% -8%, rgba(109, 140, 255, 0.1), transparent 62%),
-    radial-gradient(880px 460px at 92% -4%, rgba(45, 212, 191, 0.08), transparent 58%),
-    var(--bg);
-  background-attachment: fixed;
-  color: var(--text);
-  font-family:
-    system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  font-size: 14px;
-  line-height: 1.6;
+  background: #101014;
+  color: #e2e8f0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
-}
-
-/* ---------- 布局 ---------- */
-
-.shell {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-  max-width: 1180px;
-  min-height: 100vh;
-  margin: 0 auto;
-  padding: 28px 24px 40px;
-}
-
-.shell__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.shell__main {
-  display: grid;
-  flex: 1;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  align-items: stretch;
-}
-
-.shell__footer {
-  color: var(--text-faint);
-  font-size: 12px;
-  text-align: center;
-}
-
-.shell__footer code,
-.link {
-  font-family: var(--mono);
-}
-
-.shell__footer code {
-  padding: 1px 5px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-@media (max-width: 900px) {
-  .shell__main {
-    grid-template-columns: 1fr;
-  }
-  .shell {
-    padding: 20px 16px 32px;
-  }
-}
-
-/* ---------- 品牌 ---------- */
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.brand__mark {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #6d8cff, #2dd4bf);
-  color: #0b0d12;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.brand__title {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-}
-
-.brand__sub {
-  margin: 0;
-  color: var(--text-dim);
-  font-size: 12px;
-}
-
-.link {
-  padding: 6px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text-dim);
-  font-size: 12.5px;
-  text-decoration: none;
-  transition: color 0.15s, border-color 0.15s;
-}
-
-.link:hover {
-  color: var(--text);
-  border-color: var(--border-strong);
-}
-
-/* ---------- 面板 ---------- */
-
-.panel {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-height: 380px;
-  padding: 18px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 40%),
-    var(--bg-elevated);
-}
-
-.panel__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.panel__head h2 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.panel__count {
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-dim);
-  font-family: var(--mono);
-  font-size: 11px;
-}
-
-.panel__badge {
-  padding: 1px 6px;
-  border: 1px solid rgba(45, 212, 191, 0.25);
-  border-radius: 6px;
-  background: rgba(45, 212, 191, 0.12);
-  color: #2dd4bf;
-  font-size: 10px;
-  letter-spacing: 0.6px;
-}
-
-.panel__usage {
-  color: var(--text-dim);
-  font-family: var(--mono);
-  font-size: 11px;
-}
-
-/* ---------- 控件 ---------- */
-
-.row {
-  display: flex;
-  gap: 8px;
-}
-
-.input {
-  flex: 1;
-  min-width: 0;
-  padding: 9px 12px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: var(--bg-input);
-  color: var(--text);
-  font: inherit;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.input::placeholder {
-  color: var(--text-faint);
-}
-
-.input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
-}
-
-.btn {
-  padding: 9px 16px;
-  border: 1px solid transparent;
-  border-radius: 9px;
-  font: inherit;
-  font-weight: 500;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: filter 0.15s, background 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.btn--primary {
-  background: var(--accent);
-  color: #0a0d14;
-}
-
-.btn--primary:not(:disabled):hover {
-  filter: brightness(1.08);
-}
-
-.btn--danger {
-  border-color: rgba(248, 113, 113, 0.3);
-  background: rgba(248, 113, 113, 0.14);
-  color: var(--danger);
-}
-
-.btn--ghost {
-  border-color: var(--border);
-  background: transparent;
-  color: var(--text-dim);
-}
-
-.btn--ghost:not(:disabled):hover {
-  border-color: var(--border-strong);
-  color: var(--text);
-}
-
-/* ---------- 待办列表 ---------- */
-
-.todo-list {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  overflow-y: auto;
-  list-style: none;
-}
-
-.todo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: var(--bg-input);
-  transition: border-color 0.15s, opacity 0.15s;
-}
-
-.todo:hover {
-  border-color: var(--border-strong);
-}
-
-.todo--busy {
-  opacity: 0.55;
-}
-
-.todo__check {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  cursor: pointer;
-}
-
-.todo__check input {
-  flex-shrink: 0;
-  width: 15px;
-  height: 15px;
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-
-.todo__title {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* 时间靠右、等宽数字，避免每行时间宽度不同导致标题右边缘参差 */
-.todo__time {
-  flex-shrink: 0;
-  color: var(--text-faint);
-  font-family: var(--mono);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-}
-
-.todo--done .todo__title {
-  color: var(--text-faint);
-  text-decoration: line-through;
-}
-
-.todo__del {
-  padding: 4px 6px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-faint);
-  font-size: 13px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.todo__del:not(:disabled):hover {
-  background: rgba(248, 113, 113, 0.1);
-  color: var(--danger);
-}
-
-/* ---------- 流式区 ---------- */
-
-.stream {
-  flex: 1;
-  min-height: 180px;
-  padding: 14px;
-  overflow-y: auto;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: var(--bg-input);
-  font-family: var(--mono);
-  font-size: 13px;
-  line-height: 1.8;
-  white-space: pre-wrap;
-  word-break: break-word;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.stream--live {
-  border-color: rgba(45, 212, 191, 0.42);
-  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.06);
-}
-
-.stream__text {
-  margin: 0;
-}
-
-.caret {
-  display: inline-block;
-  width: 7px;
-  height: 15px;
-  margin-left: 2px;
-  background: #2dd4bf;
-  vertical-align: -2px;
-  animation: blink 1s steps(2, start) infinite;
-}
-
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
-
-/* ---------- 状态 ---------- */
-
-.state {
-  margin: 0;
-  padding: 28px 0;
-  color: var(--text-faint);
-  font-size: 13px;
-  text-align: center;
-}
-
-.alert {
-  margin: 0;
-  padding: 9px 12px;
-  border: 1px solid rgba(248, 113, 113, 0.28);
-  border-radius: 9px;
-  background: rgba(248, 113, 113, 0.1);
-  color: #fecaca;
-  font-size: 12.5px;
 }

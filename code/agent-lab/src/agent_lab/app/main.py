@@ -11,6 +11,7 @@
 # collections.abc：标准库的「抽象基类」模块，定义 Iterator / Generator / AsyncGenerator 等协议。
 #   这里只用于「类型标注」，运行时零开销 —— 相当于 TS 的 interface，只描述形状、不产生代码。
 #   AsyncGenerator[Y, S]：Y = yield 出去的类型，S = send 传回来的类型；本文件两者都不用，故写 None, None。
+import logging
 from collections.abc import AsyncGenerator
 
 # contextlib：标准库的上下文管理工具集（同模块还有 closing / suppress / ExitStack）。
@@ -21,6 +22,7 @@ from collections.abc import AsyncGenerator
 #     yield 之后 = 应用关闭（释放资源，保证一定执行）
 from contextlib import asynccontextmanager
 
+import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -34,7 +36,7 @@ from .core.errors import register_exception_handlers
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:  # pyright: ignore[reportUnusedParameter]
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """生命周期：yield 之前是启动，之后是关闭。
 
     用 lifespan 而不是 @app.on_event("startup")，
@@ -43,20 +45,77 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:  # pyright: igno
     返回类型用 AsyncGenerator 而不是 AsyncIterator：
     asynccontextmanager 要求被装饰的生成器支持 asend/athrow，
     AsyncIterator 没有这两个方法，新版类型检查器会判为弃用。
-
-    `app` 是 FastAPI 协议要求的入参（框架按位置传入），
-    本阶段暂时用不到，故用 pyright ignore 标注，而不是删掉它。
     """
     # --- 启动 ---
     # 建库建表：放在这里而不是模块导入时，是为了让「导入本模块」不产生副作用
     # （测试、脚本、CLI 都能安全 import，不会顺手建一堆文件）
     await init_db()
-    # S1 起：在这里初始化 HTTP 客户端（httpx.AsyncClient）
-    # S3 起：在这里建数据库连接池
-    # S4 起：在这里加载记忆存储
-    yield
-    # --- 关闭 ---
-    # 对应上面申请的资源，务必在这里释放，否则进程退出时连接会泄漏
+
+    # S9：演示账号 + 老数据归属。
+    # 放在 init_db 之后、其余初始化之前 —— 后面所有查询都依赖 user_id 有值。
+    if settings.SEED_DEMO_USER:
+        from .core.db import get_db as _get_db
+        from .services import users as _users
+
+        # 手动推进 async generator：这里不是请求上下文，拿不到 Depends 的自动清理，
+        # 必须自己 aclose，否则连接泄漏（每重启一次漏一个）。
+        gen = _get_db()
+        db = await anext(gen)
+        try:
+            demo_id = await _users.ensure_demo_user(db)
+            claimed = await _users.claim_legacy_rows(db, demo_id)
+            if claimed:
+                logging.getLogger(__name__).info("已把 %d 条历史数据归属到演示账号", claimed)
+        finally:
+            await gen.aclose()
+
+    if settings.AUTH_ENABLED and settings.AUTH_SECRET == "dev-only-change-me-in-production":
+        # 不阻断启动（本地开发要用），但必须喊出来：
+        # 用默认密钥上线 = 任何人都能自己签一个 token 冒充任意用户。
+        logging.getLogger(__name__).warning(
+            "AUTH_SECRET 仍是默认值 —— 任何人都能伪造 token。上线前请在 .env 里换成随机长串。"
+        )
+
+    # 预热嵌入模型：首次加载 1-2s，放在启动时而不是第一个请求时。
+    # 失败不崩溃 —— RAG 功能不可用，其余接口照常工作。
+    from .services.rag import embedder
+
+    embedder.warm_up()
+
+    # pgvector 连接池：向量存储 + HNSW 检索。
+    # 放在 embedder 之后：万一 pg 启动失败，嵌入先不用白等。
+    from .core import pg as pg_core
+
+    pg_pool = await pg_core.create_pool()
+    pg_core.set_pool(pg_pool)
+    await pg_core.init_pg()
+
+    # 模型调用用的 HTTP 连接池：建一次，全进程复用。
+    # 每个请求都新建 AsyncClient 的话，TCP + TLS 每次都要重新握手，
+    # 首字节延迟会差出几百毫秒 —— 对流式对话这种"等第一个字"的体验是致命的。
+    #
+    # 超时拆两段：connect 短（连不上要立刻说），read 长（模型吐字慢）。
+    timeout = httpx.Timeout(
+        connect=settings.LLM_CONNECT_TIMEOUT,
+        read=settings.LLM_READ_TIMEOUT,
+        write=10.0,
+        pool=10.0,
+    )
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        app.state.http = client
+
+        if not settings.llm_configured:
+            # 只警告、不阻断启动：待办、demo 流都不依赖模型，
+            # 没有 Key 时它们照常可用，只有 /chat/stream 会返回 LLM_NOT_CONFIGURED。
+            logging.getLogger(__name__).warning(
+                "未配置 LLM_API_KEY —— /api/v1/chat/stream 会返回 LLM_NOT_CONFIGURED，"
+                "其余接口不受影响。填写方式见 agent-lab/.env.example"
+            )
+
+        yield
+
+        # --- 关闭 ---
+        await pg_core.close_pool()
 
 
 def create_app() -> FastAPI:
@@ -118,6 +177,7 @@ def create_app() -> FastAPI:
             "docs_redoc": "/redoc",
             "openapi": app.openapi_url or "",
             "health": f"{settings.API_V1_PREFIX}/health",
+            "chat": f"{settings.API_V1_PREFIX}/chat/stream",
         }
 
     return app

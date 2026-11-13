@@ -9,18 +9,59 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "aiosqlite>=0.22.1",
+    "asyncpg>=0.32.0",
     "fastapi>=0.162.2",
+    "fastembed>=0.9.1",
     "httpx>=0.28.1",
+    "jieba>=0.42.1",
+    "pgvector>=0.5.1",
     "pydantic-settings>=2.16.2",
+    "pymupdf>=2.1",
+    "python-multipart>=0.0.33",
+    "tiktoken>=0.14.0",
     "uvicorn[standard]>=0.54.0",
 ]
 
 [project.scripts]
 agent-lab = "agent_lab:main"
 
+# S7：测试与评测依赖放 dev 组，不进生产镜像
+# ruff 也放这里：版本跟着 uv.lock 走，CI 和本地跑的一定是同一个。
+# 用 uvx 拉「最新版」的话，某天上游改了默认规则，CI 会毫无预兆地变红。
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.17.5",
+]
+
 [build-system]
 requires = ["uv_build>=0.12.2,<0.13.0"]
 build-backend = "uv_build"
+
+# --- S7：测试配置 ---
+# asyncio_mode=auto：异步测试不用每条都写 @pytest.mark.asyncio
+# pythonpath 同时包含 src（导入 agent_lab）和项目根（导入 evals）
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+# 显式声明异步夹具的作用域，否则 pytest-asyncio 每次都会发弃用警告
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+addopts = "-q"
+
+# --- 静态检查 ---
+# 规则集必须显式写死。ruff 的默认规则随版本演进，
+# 不声明的话升级一次就可能冒出几十条与本次改动无关的告警，
+# 把真正的问题淹没掉（本仓库曾因默认规则变化一次性报出 60 条）。
+# 当前只启用「一定能自动判定的错误」：语法错误、未定义名、未使用导入。
+# 风格类规则（行宽、引号、import 排序）交给格式化，不在这里卡人。
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
 
 # --- 类型检查器配置 ---
 # 本项目是 src layout：真正的源码根是 src/，包名是 agent_lab。

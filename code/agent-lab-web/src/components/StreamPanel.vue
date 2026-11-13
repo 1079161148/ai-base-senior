@@ -43,12 +43,26 @@ async function start() {
   }
 }
 
-function stop() {
-  controller?.abort()
+/**
+ * 中断当前流。
+ *
+ * abort() 不传参时，Chrome 会在控制台打：
+ *   AbortError: signal is aborted without reason
+ * 看起来像 bug，其实是浏览器的网络层在给被拆除的响应收尾。
+ *
+ * 传一个 DOMException 作为 reason，日志就变成：
+ *   AbortError: 用户主动停止
+ * 同样的机制，但一眼能看懂是谁触发的。
+ *
+ * 注意：reason 的 name 必须仍是 'AbortError'，否则 start() 里的
+ * `e.name === 'AbortError'` 判断会失效，用户会把正常停止看成失败。
+ */
+function stop(reason = '用户主动停止') {
+  controller?.abort(new DOMException(reason, 'AbortError'))
 }
 
 // 组件卸载时一定要中断，否则离开页面后连接还挂着
-onBeforeUnmount(stop)
+onBeforeUnmount(() => stop('组件已卸载'))
 </script>
 
 <template>
@@ -68,7 +82,8 @@ onBeforeUnmount(stop)
       <button v-if="!running" class="btn btn--primary" type="submit" :disabled="!canStart">
         开始
       </button>
-      <button v-else class="btn btn--danger" type="button" @click="stop">停止</button>
+      <!-- 必须写 stop() 而不是 stop：后者会把 MouseEvent 当第一个参数传给 stop() -->
+      <button v-else class="btn btn--danger" type="button" @click="stop()">停止</button>
     </form>
 
     <p v-if="error" class="alert">{{ error }}</p>
