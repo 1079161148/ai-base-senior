@@ -9,8 +9,11 @@ name: CI
 # 后端改一个函数也不该触发 npm install。并行的反馈才快。
 
 on:
+  # 这个仓库的主分支叫 master（不是 main）。
+  # 写成 [main] 会导致 push 后 CI 一声不响地不触发 —— 比报错更难发现。
+  # 两个都列上，仓库改名或迁移不用再动这一行。
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
 
 # 最小权限。默认 token 是读写全仓库的，而 CI 只需要读代码 ——
