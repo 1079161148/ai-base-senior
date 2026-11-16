@@ -400,6 +400,13 @@ print(util.__name__, util.__package__, util.__spec__.name)
 
 ### 4.3 子包与导入链
 
+相对导入符号：
+
+- . —— 当前包
+- .. —— 父包
+- ... —— 祖父包
+限制： 相对导入不能用于直接运行的模块，只用于包内模块被导入时。
+
 ```powershell
 python -m app.sub.deep
 ```

@@ -32,6 +32,24 @@
 
 **与 README 的分工**：README 给结论与边界，本文件负责机制穷举与判定。冲突时以本文件为准。
 
+```py
+class Dog:
+    pass
+
+
+# 等效于
+class Dog(metaclass=type):
+    pass
+
+
+# 等效于
+Dog = type("Dog", (), {})
+
+# 等效于
+Dog = type.__call__(type, "Dog", (), {})
+```
+也就是说，class 关键字只是语法糖，底层仍然是通过 type() 创建类。
+
 ## 1. 类是怎么被创建的
 
 ### 1.1 五步链路

@@ -434,6 +434,65 @@ print(sys.prefix != sys.base_prefix, sys.prefix)
 
 ## 7. 依赖管理
 
+在项目中使用 requirements.txt 记录所有依赖：
+
+### 生成当前环境的依赖列表
+
+```python
+pip freeze > requirements.txt 
+```
+从 requirements.txt 安装依赖：
+
+```python
+pip install -r requirements.txt
+```
+
+> 虚拟环境 - 不同项目可能需要不同版本的依赖，使用虚拟环境可以隔离依赖：
+
+###  创建虚拟环境（Python 3.3+）
+```shell
+python -m venv .venv
+```
+
+### 激活虚拟环境 macOS / Linux
+```shell
+source .venv/bin/activate
+```
+
+### Windows
+```shell
+.venv\Scripts\activate
+```
+
+### 激活后，pip 安装的包只在该环境中生效
+```shell
+pip install requests
+```
+
+### 退出虚拟环境
+```shell
+deactivate
+```
+
+### 使用 venv 管理项目依赖 创建并激活虚拟环境
+```shell
+python -m venv .venv
+source .venv/bin/activate
+```
+
+# 2. 安装项目依赖
+pip install -r requirements.txt
+
+# 3. 开发完成后冻结依赖
+pip freeze > requirements.txt
+
+# 4. 退出虚拟环境
+deactivate
+> tip：
+
+- -m表示python会按照模块的查找顺序查找模块运行
+- venv的前身是一个第三方库virtualenv，从Python 3.3开始，官方将 venv 作为其功能的“精简版”集成到了标准库中，这样我们就不需要额外安装，开箱即用了。
+
 ### 7.1 `requirements.txt`
 
 ```text
