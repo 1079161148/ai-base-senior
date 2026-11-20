@@ -1,0 +1,32 @@
+[project]
+name = "ch72-async-test"
+version = "0.1.0"
+description = "第 72 章 · 异步测试：可独立运行的示例项目"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.146.0",
+    "uvicorn[standard]>=0.54.0",
+    "pydantic>=2.14.0",
+]
+
+# 示例代码不是要打包发布的库，uv 不尝试构建它
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "httpx2>=2.16.2",
+    "pytest>=8.4.0",
+    "pytest-asyncio>=1.3.0",
+    # 【作用】在异步测试里手动驱动 lifespan（`LifespanManager`）
+    "asgi-lifespan>=2.1.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+# 【要点】不设置会有 PytestDeprecationWarning（pytest-asyncio 1.5 起要求显式声明）
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-q"

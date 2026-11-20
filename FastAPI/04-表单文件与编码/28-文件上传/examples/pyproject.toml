@@ -1,0 +1,20 @@
+[project]
+name = "ch28-file-upload"
+version = "0.1.0"
+description = "第 28 章 · 文件上传：可独立运行的示例项目"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.146.0",
+    "uvicorn[standard]>=0.54.0",
+    "pydantic>=2.14.0",
+    # 【作用】multipart 解析必需
+    "python-multipart>=0.0.20",
+]
+
+# 示例代码不是要发布的包，uv 不尝试构建它
+[tool.uv]
+package = false
+
+[dependency-groups]
+# 【作用】TestClient 依赖 HTTP 客户端；Starlette ≥1.10 用 httpx2，旧版用 httpx
+dev = ["httpx>=0.28.1", "httpx2>=2.16.2"]

@@ -1,0 +1,14 @@
+# 第 76 章 · 构建上下文排除
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+tests/
+verify.py
+Dockerfile
+.dockerignore
+README.md
+base.md

@@ -1,0 +1,22 @@
+[project]
+name = "ch46-get-current-user"
+version = "0.1.0"
+description = "第 46 章 · 获取当前用户：可独立运行的示例项目"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.146.0",
+    "uvicorn[standard]>=0.54.0",
+    "pydantic>=2.14.0",
+    # 【作用】示例里的 /token 用 OAuth2PasswordRequestForm 收表单
+    "python-multipart>=0.0.34",
+    # 【作用】UserOut.email 用 EmailStr，需要 email-validator
+    "email-validator>=2.2.0",
+]
+
+# 示例代码不是要打包发布的库，uv 不尝试构建它
+[tool.uv]
+package = false
+
+[dependency-groups]
+# 【作用】TestClient 依赖 HTTP 客户端；Starlette ≥1.10 用 httpx2，旧版用 httpx
+dev = ["httpx>=0.28.1", "httpx2>=2.16.2"]

@@ -1,0 +1,21 @@
+[project]
+name = "ch27-form-data"
+version = "0.1.0"
+description = "第 27 章 · 表单数据：可独立运行的示例项目"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.146.0",
+    "uvicorn[standard]>=0.54.0",
+    "pydantic>=2.14.0",
+    # 【作用】Form/File 解析表单体的底层实现，缺失会报
+    #        "Form data requires \"python-multipart\" to be installed"
+    "python-multipart>=0.0.20",
+]
+
+# 示例代码不是要发布的包，uv 不尝试构建它
+[tool.uv]
+package = false
+
+[dependency-groups]
+# 【作用】TestClient 依赖 HTTP 客户端；Starlette ≥1.10 用 httpx2，旧版用 httpx
+dev = ["httpx>=0.28.1", "httpx2>=2.16.2"]

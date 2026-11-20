@@ -1,0 +1,18 @@
+[project]
+name = "ch50-middleware-basics"
+version = "0.1.0"
+description = "第 50 章 · 中间件基础：可独立运行的示例项目"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.146.0",
+    "uvicorn[standard]>=0.54.0",
+    "pydantic>=2.14.0",
+]
+
+# 示例代码不是要打包发布的库，uv 不尝试构建它
+[tool.uv]
+package = false
+
+[dependency-groups]
+# 【作用】TestClient 依赖 HTTP 客户端；Starlette ≥1.10 用 httpx2，旧版用 httpx
+dev = ["httpx>=0.28.1", "httpx2>=2.16.2"]

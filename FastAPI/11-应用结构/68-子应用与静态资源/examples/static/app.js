@@ -1,0 +1,1 @@
+console.log("static app.js loaded");
