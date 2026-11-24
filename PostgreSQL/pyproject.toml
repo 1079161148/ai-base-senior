@@ -1,0 +1,19 @@
+[project]
+name = "postgres-study"
+version = "0.1.0"
+description = "PostgreSQL 从 0 到 1 · 47 章实战教程（含 pgvector）"
+requires-python = ">=3.12"
+dependencies = [
+    "psycopg[binary]>=3.2.0",
+]
+
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = ["pytest>=8.4.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
