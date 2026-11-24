@@ -1,0 +1,10 @@
+# 反面教材：把密钥写进构建参数和环境变量
+FROM alpine:3.20
+
+# ARG 的值会留在镜像历史的命令文本里
+ARG DB_PASSWORD
+ENV API_TOKEN=token-written-into-image
+
+RUN echo "connecting with ${DB_PASSWORD}" > /tmp/build.log && cat /tmp/build.log
+
+CMD ["sleep", "infinity"]

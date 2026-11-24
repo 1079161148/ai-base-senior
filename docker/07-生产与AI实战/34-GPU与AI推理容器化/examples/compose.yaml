@@ -1,0 +1,32 @@
+# 生产形态：模型只读挂载、缓存用命名卷、GPU 按需声明
+name: ch34-infer
+
+services:
+  embed:
+    build: .
+    image: ch34-embed:v1
+    ports:
+      - "127.0.0.1:18094:8000"
+    volumes:
+      # 模型权重：宿主目录只读挂载，不进镜像
+      - ./models:/models:ro
+      # 运行时缓存（预热结果、tokenizer 缓存）：命名卷，跨容器复用
+      - embedcache:/cache
+    environment:
+      EMBED_DIM: "8"
+    # GPU 声明：没有 GPU 时可整段删掉，不影响 CPU 推理
+    # gpus: all
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  embedcache:

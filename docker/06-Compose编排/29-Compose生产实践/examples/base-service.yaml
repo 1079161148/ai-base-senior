@@ -1,0 +1,7 @@
+# 供 extends 复用的片段（本身也是一份合法 compose 文件）
+services:
+  alpinebase:
+    image: alpine:3.20
+    command: ["sh", "-c", "sleep infinity"]
+    environment:
+      BASE_KEY: base-value

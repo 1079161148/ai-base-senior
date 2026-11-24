@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.log
+.env
+# 教程示例用的 .env 是配套文件（内容为虚构弱口令），需要入库，否则 clone 后跑不起来
+!**/examples/.env
+*.tar
+.buildcache/

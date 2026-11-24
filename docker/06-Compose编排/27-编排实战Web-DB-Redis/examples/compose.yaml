@@ -1,0 +1,59 @@
+# 第 27 章示例：Web + PostgreSQL + Redis 三层应用
+name: ch27-app
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      # :? 语法：没配就直接报错，比运行到一半才发现连不上数据库好得多
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD 未设置}
+      POSTGRES_DB: appdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # 只在数据目录为空时执行一次（首次初始化）
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d appdb"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "60", "1"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    image: python:3.12-slim
+    working_dir: /app
+    # 源码用绑定挂载进来：改代码不用重建镜像（生产环境应该打进镜像，见第 21 章）
+    volumes:
+      - ./api:/app:ro
+    command: ["python", "app.py"]
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    ports:
+      - "127.0.0.1:18081:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  default:
+    name: ch27-net

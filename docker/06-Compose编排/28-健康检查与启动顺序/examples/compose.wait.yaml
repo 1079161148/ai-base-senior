@@ -1,0 +1,14 @@
+# 用来演示 docker compose up -d --wait：阻塞到所有服务 healthy 才返回
+name: ch28-wait
+
+services:
+  ready:
+    image: alpine:3.20
+    # 4 秒后才创建标记文件，健康检查 1 秒一次
+    command: ["sh", "-c", "sleep 4; touch /tmp/ready; sleep infinity"]
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/ready"]
+      interval: 1s
+      timeout: 1s
+      retries: 20
+      start_period: 1s

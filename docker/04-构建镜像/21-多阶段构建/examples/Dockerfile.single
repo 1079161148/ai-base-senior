@@ -1,0 +1,8 @@
+# 单阶段：构建与运行挤在同一个镜像里，工具链也会被带进最终镜像
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN echo "built at build stage" > /app/artifact.txt
+
+CMD ["cat", "/app/artifact.txt"]

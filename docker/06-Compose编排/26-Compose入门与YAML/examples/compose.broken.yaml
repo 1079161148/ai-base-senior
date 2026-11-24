@@ -1,0 +1,7 @@
+# 故意写错：depends_on 引用了不存在的服务 db
+# 用 docker compose config 校验会在启动前就报错
+services:
+  api:
+    image: alpine:3.20
+    depends_on:
+      - db

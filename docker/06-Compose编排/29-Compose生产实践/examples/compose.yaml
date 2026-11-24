@@ -1,0 +1,55 @@
+# 第 29 章示例：生产化的 Compose 结构
+name: ch29-prod
+
+# 拆到独立文件里的服务（Compose 2.20+ / 本机 v5 支持）
+include:
+  - compose.include.yaml
+
+services:
+  api:
+    image: alpine:3.20
+    command: ["sh", "-c", "sleep infinity"]
+    # 多 env_file：后者覆盖前者
+    env_file:
+      - base.env
+      - local.env
+    # 密钥不写进环境变量，落成容器内的只读文件
+    secrets:
+      - db_password
+    # deploy.resources.limits 在非 swarm 模式下同样生效
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 64M
+    labels:
+      com.example.tier: app
+
+  web:
+    image: nginx:1.27-alpine
+    # 只 expose 不发布到宿主机，才允许 --scale 起多副本
+    expose:
+      - "80"
+
+  # 下面两个默认不启动，只在 --profile tools 时拉起
+  shell:
+    image: alpine:3.20
+    command: ["sh", "-c", "sleep infinity"]
+    profiles: ["tools"]
+
+  migrate:
+    image: alpine:3.20
+    command: ["sh", "-c", "echo migrated"]
+    profiles: ["tools"]
+
+  # 用 extends 复用公共定义
+  extended:
+    extends:
+      file: base-service.yaml
+      service: alpinebase
+    environment:
+      CHILD_KEY: child-value
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt

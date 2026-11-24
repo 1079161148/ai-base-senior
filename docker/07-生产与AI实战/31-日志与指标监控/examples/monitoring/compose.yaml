@@ -1,0 +1,47 @@
+# 轻量监控栈：cAdvisor 采集 + Prometheus 存储 + Grafana 展示
+# 说明：本文件只做配置校验（config -q）；镜像较大（cadvisor/prometheus/grafana 合计约 1GB），
+#      需要时再 `docker compose -f monitoring/compose.yaml up -d` 自行拉起。
+name: ch31-monitor
+
+services:
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    command: ["--docker_only=true", "--housekeeping_interval=10s"]
+    ports:
+      - "127.0.0.1:19091:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    privileged: false
+    devices:
+      - /dev/kmsg:/dev/kmsg
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    ports:
+      - "127.0.0.1:19090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - promdata:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    ports:
+      - "127.0.0.1:13000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafanadata:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_started
+
+volumes:
+  promdata:
+  grafanadata:

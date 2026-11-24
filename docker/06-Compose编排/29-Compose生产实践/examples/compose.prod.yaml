@@ -1,0 +1,9 @@
+# 显式 -f 叠加的"环境"文件：只放与开发环境不同的部分
+services:
+  api:
+    environment:
+      DEPLOY_ENV: prod
+    deploy:
+      resources:
+        limits:
+          memory: 128M

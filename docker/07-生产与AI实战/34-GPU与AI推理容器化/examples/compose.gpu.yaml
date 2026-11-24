@@ -1,0 +1,8 @@
+# 只演示 GPU 声明语法（config 校验不需要真实 GPU）
+services:
+  embed:
+    image: ch34-embed:v1
+    gpus: all
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility

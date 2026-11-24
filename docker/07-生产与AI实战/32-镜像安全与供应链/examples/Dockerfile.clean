@@ -1,0 +1,9 @@
+# syntax=docker/dockerfile:1
+# 正确做法：BuildKit 的 secret 挂载，密钥不落层、不进历史
+FROM alpine:3.20 AS build
+RUN --mount=type=secret,id=db_password \
+    test -s /run/secrets/db_password && echo "secret consumed at build time"
+
+FROM alpine:3.20
+COPY --from=build /etc/alpine-release /app/alpine-release
+CMD ["sleep", "infinity"]

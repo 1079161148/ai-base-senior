@@ -1,0 +1,19 @@
+# 毕业项目编排：镜像 tag 由 APP_VERSION 决定，用于发布/回滚演练
+name: ch36-capstone
+
+services:
+  app:
+    image: ch36-app:${APP_VERSION:-v1}
+    ports:
+      - "127.0.0.1:18096:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)"]
+      interval: 3s
+      timeout: 2s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 128M

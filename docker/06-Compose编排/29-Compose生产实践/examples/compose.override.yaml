@@ -1,0 +1,5 @@
+# 与 compose.yaml 同目录时自动合并，不需要 -f
+services:
+  api:
+    environment:
+      OVERRIDE_MARK: from-override

@@ -1,0 +1,17 @@
+{
+  "name": "ch35-ai-stack",
+  "dockerComposeFile": "../compose.yaml",
+  "service": "agent",
+  "workspaceFolder": "/app",
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python", "ms-azuretools.vscode-docker"],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      }
+    }
+  },
+  "forwardPorts": [8000, 5432, 6379],
+  "remoteUser": "root"
+}

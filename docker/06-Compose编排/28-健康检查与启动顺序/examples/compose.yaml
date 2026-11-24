@@ -1,0 +1,70 @@
+# 第 28 章示例：健康检查三态 + depends_on 三种条件 + restart 策略
+name: ch28-hc
+
+services:
+  # ① 健康检查 + start_period：30 秒内失败不计入 retries，状态停在 starting
+  probe:
+    image: alpine:3.20
+    command: ["sh", "-c", "sleep infinity"]
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/ready"]
+      interval: 2s
+      timeout: 1s
+      retries: 3
+      start_period: 30s
+
+  # ② 永远失败的健康检查：retries 用尽后变 unhealthy
+  sick:
+    image: alpine:3.20
+    command: ["sh", "-c", "sleep infinity"]
+    healthcheck:
+      test: ["CMD", "false"]
+      interval: 1s
+      timeout: 1s
+      retries: 2
+      start_period: 1s
+
+  # ③ 镜像本身没定义健康检查，可以在 compose 里补上
+  web:
+    image: nginx:1.27-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 2s
+      timeout: 2s
+      retries: 3
+
+  # ④ 故意 8 秒后才开始监听 5432，用来对比两种依赖条件
+  slowdb:
+    image: alpine:3.20
+    command: ["sh", "-c", "sleep 8; while true; do nc -l -p 5432 >/dev/null 2>&1; done"]
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 5432"]
+      interval: 1s
+      timeout: 1s
+      retries: 60
+
+  consumer_started:
+    image: alpine:3.20
+    command: ["sh", "-c", "sleep 1; nc -z slowdb 5432 && echo CONNECTED || echo NOT_READY"]
+    depends_on:
+      slowdb:
+        condition: service_started
+
+  consumer_healthy:
+    image: alpine:3.20
+    command: ["sh", "-c", "nc -z slowdb 5432 && echo CONNECTED || echo NOT_READY"]
+    depends_on:
+      slowdb:
+        condition: service_healthy
+
+  # ⑤ on-failure:3 —— 连续失败 3 次后放弃
+  crasher:
+    image: alpine:3.20
+    command: ["sh", "-c", "sleep 1; exit 1"]
+    restart: on-failure:3
+
+  # ⑥ 默认策略 no —— 退出就退出，绝不重启
+  steady:
+    image: alpine:3.20
+    command: ["sh", "-c", "sleep 1; exit 1"]
+    restart: "no"

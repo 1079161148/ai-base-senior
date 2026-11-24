@@ -1,0 +1,31 @@
+# 第 26 章示例：最小可运行的多服务编排
+# 注意：Compose v2 起不需要（也不建议写）顶层 version 字段。
+name: ch26-file
+
+services:
+  web:
+    image: nginx:1.27-alpine
+    ports:
+      - "127.0.0.1:18080:80"
+    volumes:
+      - data:/data
+
+  worker:
+    image: alpine:3.20
+    # 容器必须有前台常驻进程，否则起来就退出
+    command: ["sleep", "infinity"]
+    environment:
+      MODE: demo
+      # 变量插值：优先读 .env，缺失时用默认值
+      GREETING: hello-${COMPOSE_TEST_USER:-guest}
+      FALLBACK: ${NOT_SET_ANYWHERE:-guest}
+    depends_on:
+      - web
+
+volumes:
+  data:
+
+networks:
+  default:
+    # 显式命名，方便验证；否则默认叫 ch26-compose_default
+    name: ch26-net

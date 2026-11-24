@@ -1,0 +1,4 @@
+# 用来证明 .dockerignore 生效：把整个构建上下文拷进镜像
+FROM alpine:3.20
+COPY . /ctx
+CMD ["sleep", "infinity"]
