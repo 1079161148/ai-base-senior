@@ -40,7 +40,7 @@ UPDATE → 新版本 + 旧版本标记死亡 → VACUUM 回收 → ANALYZE 更�
 | 频繁 VACUUM FULL | 锁表 | 普通 VACUUM | 实测 |
 | 长事务不提交 | VACUUM 无效 | 缩短事务 | 实测 |
 | 不看 n_dead_tup | 膨胀不知 | 查统计 | 实测 |
-| 导入后不 ANALYZE | 计划差 | 补执行 | 原仓库 06 |
+| 导入后不 ANALYZE | 计划差 | 补执行 | 通用实践 |
 | 不看 autovacuum 配置 | 不知何时触发 | 查 pg_settings | 实测 |
 | 索引膨胀不处理 | 查询变慢 | REINDEX | 实测 |
 | 大表 VACUUM 高峰执行 | IO 压力 | 低峰 | 实测 |
@@ -61,7 +61,7 @@ UPDATE → 新版本 + 旧版本标记死亡 → VACUUM 回收 → ANALYZE 更�
 
 | 编号 | 类型 | 内容 |
 | --- | --- | --- |
-| `[r1]` | 原仓库 | 07 拓展知识（VACUUM） |
+| `[r1]` | 官方文档 | PostgreSQL 16 官方手册 |
 
 > 本次实测 9/9，UPDATE 产生死元组后 VACUUM 使其下降，ANALYZE 后 n_live_tup=2000。
 

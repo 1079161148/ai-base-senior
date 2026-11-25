@@ -40,19 +40,19 @@ SQL 文本 → 解析 → 重写 → 规划器 → 执行器 → 结果
 | DELETE 当 DDL | 分类错误 | 它是 DML | 实测 |
 | SELECT 不算 DML | 分类遗漏 | 标准归 DML | 实测 |
 | autocommit 里回滚 | 无效 | 普通连接 | 实测 |
-| 不设主键 | 无法唯一定位行 | PRIMARY KEY | 原仓库 02 |
-| 用 REAL 存金额 | 精度误差 | NUMERIC | 原仓库 02 |
-| 用 TIMESTAMP 存带时区时间 | 时区丢失 | TIMESTAMPTZ | 原仓库 02 |
-| VARCHAR 不写长度 | PG 允许但语义弱 | 显式长度或 TEXT | 原仓库 02 |
-| 不写 IF EXISTS | 重复执行报错 | 加 IF EXISTS | 原仓库 02 |
-| CASCADE 滥用 | 误删依赖对象 | 先查依赖 | 原仓库 02 |
+| 不设主键 | 无法唯一定位行 | PRIMARY KEY | 通用实践 |
+| 用 REAL 存金额 | 精度误差 | NUMERIC | 通用实践 |
+| 用 TIMESTAMP 存带时区时间 | 时区丢失 | TIMESTAMPTZ | 通用实践 |
+| VARCHAR 不写长度 | PG 允许但语义弱 | 显式长度或 TEXT | 通用实践 |
+| 不写 IF EXISTS | 重复执行报错 | 加 IF EXISTS | 通用实践 |
+| CASCADE 滥用 | 误删依赖对象 | 先查依赖 | 通用实践 |
 | 序列名猜错 | nextval 报错 | 用 regclass 转换 | 实测 |
 | 事务里建库 | 不允许 | 另开连接 | 实测 |
 | 权限函数记错参数 | 返回 NULL | 查文档 | 实测 |
-| 把 EXPLAIN 当执行 | 看不到真实耗时 | 加 ANALYZE | 原仓库 06 |
-| 不看计划就建索引 | 盲目优化 | 先 EXPLAIN | 原仓库 06 |
+| 把 EXPLAIN 当执行 | 看不到真实耗时 | 加 ANALYZE | 通用实践 |
+| 不看计划就建索引 | 盲目优化 | 先 EXPLAIN | 通用实践 |
 | 把 DCL 当 DML | 权限混乱 | 单独分类 | 实测 |
-| 省略列名 INSERT | 顺序敏感 | 写列清单 | 原仓库 04 |
+| 省略列名 INSERT | 顺序敏感 | 写列清单 | 通用实践 |
 | 事务不提交就断开 | 自动回滚 | 显式 COMMIT | 实测 |
 
 ## 6. 最佳实践
@@ -63,7 +63,7 @@ SQL 文本 → 解析 → 重写 → 规划器 → 执行器 → 结果
 
 | 编号 | 类型 | 内容 |
 | --- | --- | --- |
-| `[r1]` | 原仓库 | 02 DDL 课件 |
+| `[r1]` | 官方文档 | PostgreSQL 16 官方手册 |
 | `[w1]` | 官方 | SQL 语法分类 |
 
 > 本次实测 8/8，`DELETE` 后序列值为 2，`TRUNCATE RESTART IDENTITY` 后为 1。

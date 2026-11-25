@@ -45,7 +45,7 @@ OVER (PARTITION BY ... ORDER BY ... ROWS BETWEEN ...)
 | RANGE vs ROWS 混用 | 累计值不同 | 明确帧类型 | 实测 |
 | PARTITION 键错 | 分组粒度错 | 检查业务键 | 实测 |
 | lag 边界 NULL | 首行为空 | COALESCE | 实测 |
-| 无索引窗口排序 | 慢 | 第 22 章 | 原仓库 06 |
+| 无索引窗口排序 | 慢 | 第 22 章 | 通用实践 |
 | INTERSECT 列顺序不同 | 语义错 | 对齐 | 实测 |
 | EXCEPT 方向写反 | 结果相反 | 左减右 | 实测 |
 | 大表窗口排序 | 内存大 | 分页后算 | 实测 |
@@ -64,7 +64,7 @@ OVER (PARTITION BY ... ORDER BY ... ROWS BETWEEN ...)
 
 | 编号 | 类型 | 内容 |
 | --- | --- | --- |
-| `[r1]` | 原仓库 | 04 DML 课件 |
+| `[r1]` | 官方文档 | PostgreSQL 16 官方手册 |
 
 > 本次实测 10/10，rank 并列后跳号，dense_rank 不跳。
 
@@ -75,4 +75,4 @@ OVER (PARTITION BY ... ORDER BY ... ROWS BETWEEN ...)
 
 ## 9. 下一章
 
-第 15 章用原仓库 33 道电商题做综合实战。
+第 15 章用 33 道电商题做综合实战。

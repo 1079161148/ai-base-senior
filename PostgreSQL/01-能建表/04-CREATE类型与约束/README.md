@@ -2,7 +2,7 @@
 
 ## 一句话结论
 
-`CREATE TABLE` 一次声明三类信息：**列类型**（`SERIAL`/`NUMERIC`/`UUID`/`JSONB`）、**列约束**（`NOT NULL`/`UNIQUE`/`CHECK`/`DEFAULT`）、**表约束**（单列或复合 `PRIMARY KEY`）。这一章用 13 条断言建出原仓库的 `students` 表，并真实验证约束会拒绝坏数据。
+`CREATE TABLE` 一次声明三类信息：**列类型**（`SERIAL`/`NUMERIC`/`UUID`/`JSONB`）、**列约束**（`NOT NULL`/`UNIQUE`/`CHECK`/`DEFAULT`）、**表约束**（单列或复合 `PRIMARY KEY`）。这一章用 13 条断言建出教学用的 `students` 表，并真实验证约束会拒绝坏数据。
 
 ## 最小可运行案例
 

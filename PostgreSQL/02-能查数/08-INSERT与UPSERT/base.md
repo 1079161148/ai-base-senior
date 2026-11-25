@@ -34,14 +34,14 @@ INSERT → 检查唯一索引 → 冲突 → DO UPDATE/NOTHING → RETURNING
 
 | 错误写法 / 操作 | 现象 | 正确写法 | 依据 |
 | --- | --- | --- | --- |
-| 省略列名 | 顺序敏感 | 写列清单 | 原仓库 04 |
+| 省略列名 | 顺序敏感 | 写列清单 | 通用实践 |
 | 无唯一约束 UPSERT | 报错 | 加 UNIQUE | 实测 |
 | `VALUES(name)` 引用新值 | 语义错 | EXCLUDED.name | 实测 |
 | DO NOTHING 后 RETURNING | 无行返回 | 用 DO UPDATE | 实测 |
 | 多行插入不按顺序 | id 分配乱 | 用 ORDER BY 查 | 实测 |
-| INSERT SELECT 无 WHERE | 全表搬 | 加过滤 | 原仓库 04 |
-| 忘了 NOT NULL 列 | 插入失败 | 补值或默认值 | 原仓库 02 |
-| 金额用 REAL | 精度丢失 | NUMERIC | 原仓库 02 |
+| INSERT SELECT 无 WHERE | 全表搬 | 加过滤 | 通用实践 |
+| 忘了 NOT NULL 列 | 插入失败 | 补值或默认值 | 通用实践 |
+| 金额用 REAL | 精度丢失 | NUMERIC | 通用实践 |
 | 不测冲突分支 | 上线才炸 | 双次插入 | 实测 |
 | 用 `REPLACE INTO` | PG 不支持 | ON CONFLICT | 实测 |
 | 并发 UPSERT 无事务 | 部分成功 | 包事务 | 第 17 章 |
@@ -50,7 +50,7 @@ INSERT → 检查唯一索引 → 冲突 → DO UPDATE/NOTHING → RETURNING
 | 把 EXCLUDED 当表名 | 语义混淆 | 它是伪表 | 实测 |
 | 批量插入无分批 | 锁时间长 | 分批提交 | 实测 |
 | 用 SERIAL 当前值 | 并发错 | RETURNING id | 实测 |
-| 忽略默认值 | 数据不完整 | 显式利用默认值 | 原仓库 04 |
+| 忽略默认值 | 数据不完整 | 显式利用默认值 | 通用实践 |
 | 跳过验收 | 冲突逻辑未验证 | 9/9 再走 | 实测 |
 
 ## 6. 最佳实践
@@ -61,7 +61,7 @@ INSERT → 检查唯一索引 → 冲突 → DO UPDATE/NOTHING → RETURNING
 
 | 编号 | 类型 | 内容 |
 | --- | --- | --- |
-| `[r1]` | 原仓库 | 04 DML 课件 |
+| `[r1]` | 官方文档 | PostgreSQL 16 官方手册 |
 
 > 本次实测 9/9，DO UPDATE 后 age=99，DO NOTHING 后仍为 99。
 

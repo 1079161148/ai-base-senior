@@ -42,15 +42,15 @@ FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT
 | 分组后不排序 | 顺序不定 | ORDER BY | 第 10 章 |
 | 分组键含 NULL | 单独成组 | 可过滤 | 实测 |
 | SUM 溢出 | 数值越界 | 用 BIGINT/NUMERIC | 实测 |
-| 聚合字符串 | 报错 | string_agg | 原仓库 07 |
+| 聚合字符串 | 报错 | string_agg | 通用实践 |
 | 不测空结果 | 边界漏 | HAVING 不可能条件 | 实测 |
 | 用 DISTINCT 代替 GROUP BY | 无法聚合 | 两者配合 | 实测 |
-| 分组大表无索引 | 慢 | 第 22 章 | 原仓库 06 |
+| 分组大表无索引 | 慢 | 第 22 章 | 通用实践 |
 | 别名用于 HAVING | PG 不允许 | 重复表达式 | 实测 |
 | 多列分组漏一列 | 组粒度错 | 检查业务键 | 实测 |
 | 聚合结果不取整 | 展示冗长 | ROUND | 实测 |
 | 把 HAVING 当 WHERE | 性能差 | 能前置就前置 | 实测 |
-| 不查执行计划 | 分组慢不知原因 | EXPLAIN | 原仓库 06 |
+| 不查执行计划 | 分组慢不知原因 | EXPLAIN | 通用实践 |
 | 跳过验收 | 分组错不自知 | 11/11 再走 | 实测 |
 
 ## 6. 最佳实践
@@ -61,7 +61,7 @@ FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT
 
 | 编号 | 类型 | 内容 |
 | --- | --- | --- |
-| `[r1]` | 原仓库 | 04 DML 课件 |
+| `[r1]` | 官方文档 | PostgreSQL 16 官方手册 |
 
 > 本次实测 11/11，`COUNT(price)=8`、`COUNT(*)=9`（含 1 行 NULL）。
 
